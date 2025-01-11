@@ -37,7 +37,7 @@ def find_lin_section(data_frame):
 
         seconds_to_green = None
         for j in range(peaks[i], peaks[i+1]): 
-            if traffic_light[j] == 0 and traffic_light[j + 1] == 1:
+            if traffic_light[j][0] == 0 and traffic_light[j + 1][0] == 1:
                 seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
                 break
             if j == peaks[i+1] - 1:
