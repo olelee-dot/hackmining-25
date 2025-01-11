@@ -46,19 +46,10 @@ ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dr
 #ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
 #ampel_data["ampel_s"] = ampel_data["ampel_s"].astype(int)
 
-
 #print(september_data_2.dtypes)
-store_df( "ampel_hohe.csv", ampel_data)
+# store_df( "ampel_hohe.csv", ampel_data)
 
-print (np.size(ampel_data["ampel_n"]))
-print (np.size(ampel_data["ampel_s"]))
-print (np.size(level_data))
-print (ampel_data)
-print (level_data)
-
-print ('start of analysis of pit lvl')
-analysis.analysis_pit_lvl_data(level_data, ampel_data)
-print ('analysis of pit lvl completed')
+analysis.analysis_pit_lvl_data(ampel_data)
 
 # print ('start of analysis of truck loads')
 # dataframe_truck_loads = ...
