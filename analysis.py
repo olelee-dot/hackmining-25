@@ -36,13 +36,13 @@ def find_lin_section(data_frame):
         AUC_crusher = (minimum_fill_height + final_fill_height) * 0.5 * (seconds_to_final_peak.total_seconds() - seconds_to_min_fill.total_seconds())
 
         seconds_to_green = None
-        no_green_light = 0
-        for j in range(peaks[i], peaks[i+1]): 
-            if traffic_light[j][0] == 0 and traffic_light[j + 1][0] == 1:
-                seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
-                break
-            if j == peaks[i+1] - 1:
-                no_green_light = no_green_light + 1
+        # no_green_light = 0
+        # for j in range(peaks[i], peaks[i+1]): 
+            # if traffic_light[j][0] == 0 and traffic_light[j + 1][0] == 1:
+               #  seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
+               #  break
+            # if j == peaks[i+1] - 1:
+               #  no_green_light = no_green_light + 1
         
         if crusher_speed > 0 and initial_feeder_speed < 0: # filter so that only data with relevant crusher and feeder speeds are considered
             peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
@@ -96,17 +96,8 @@ def analysis_pit_lvl_data(dataframe_pit_level):
     
     list_of_objects = find_lin_section (dataframe_pit_level)
 
-    # initialize empty lists
-    list_of_feeder_speeds = [] 
-    list_of_crusher_speeds = []
-
-    for i, obj in enumerate(list_of_objects):
-        if obj.initial_feeder_speed is not None:
-            list_of_feeder_speeds[i] = obj.initial_feeder_speed
-            #print (f'Feeder speed of object {i}: obj.initial_feeder_speed}')
-        if obj.crusher_speed is not None:
-            list_of_crusher_speeds[i] = obj.crusher_speed
-            print (f'Crusher speed of object {i}: {obj.crusher_speed}')
+    list_of_feeder_speeds = [obj.initial_feeder_speed_pct for obj in list_of_objects if obj.initial_feeder_speed_pct is not None]
+    list_of_crusher_speeds = [obj.crusher_speed for obj in list_of_objects if obj.crusher_speed is not None]
 
     # calculate mean and std of feeder and crusher speed    
     mean_feeder_speed = np.mean(list_of_feeder_speeds)
@@ -127,16 +118,25 @@ def analysis_pit_lvl_data(dataframe_pit_level):
 
     print ("Mean of feeder speed:", mean_feeder_speed)
     print ("Standard deviation of feeder speed:", std_feeder_speed)
-    if shapiro_p_feeder > 0.05:
-        print ("Feeder speed is normally distributed")
+    if shapiro_p_feeder is not None:
+        if shapiro_p_feeder > 0.05:
+            print ("Feeder speed is normally distributed")
+        else:
+            print ("Feeder speed is not normally distributed")
     else:
-        print ("Feeder speed is not normally distributed")
+        print ('Test for normal distribution of feeder speed could not be performed due to insufficient data')
+
+
     print ("Mean of crusher speed:", mean_crusher_speed)
+    print ("Standard deviation of crusher speed:", std_crusher_speed)
     fig, axs = plt.subplots(nrows=2)
-    if shapiro_p_crusher > 0.05:
-        print ("Crusher speed is normally distributed")
-    else:
-        print ("Crusher speed is not normally distributed")
+    if shapiro_p_crusher is not None:
+        if shapiro_p_crusher > 0.05:
+            print ("Crusher speed is normally distributed")
+        else:
+            print ("Crusher speed is not normally distributed")
+    else:   
+        print ('Test for normal distribution of crusher speed could not be performed due to insufficient data')
 
     # plot histogram of feeder and crusher speed
     fig, axs = plt.subplots(2)

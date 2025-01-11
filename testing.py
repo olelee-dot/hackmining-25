@@ -6,7 +6,7 @@ import pandas as pd
 data_path = os.path.join(os.path.dirname(__file__), "original_data")    # wenn alle dateien in origial_data sind
 #path = os.path.join(data_path, filename)
 
-number_of_rows = 100000
+number_of_rows = 100000000
 
 ampel_data = pd.read_csv(os.path.join(data_path, "crusher_data_for_analysis.csv"), delimiter=";", nrows=number_of_rows)
 ampel_data = ampel_data.filter(items=["timestamp", "115YL12013A"])

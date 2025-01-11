@@ -28,6 +28,7 @@ class Peak_To_Peak:
     crusher_speed = None
     AUC = None
     timestamp_min_fill = None
+    Score = None
 
     def __init__(self, timestamp_first_peak, initial_fill_height, initial_feeder_speed, 
                  minimum_fill_height, seconds_to_green, seconds_to_final_peak, 
@@ -52,6 +53,26 @@ class Peak_To_Peak:
     
     def set_seconds_to_minfill(self, timestamp_min_fill):
         self.timestamp_min_fill = timestamp_min_fill
+
+    def calculate_score (self):
+        warn_max = self.bin_parameter.warning_maximum_height
+        warn_min = self.bin_parameter.warning_minimum_height
+        emerg_max = self.bin_parameter.emergency_stop_maximum_height
+        emerg_min = self.bin_parameter.emergency_stop_minimum_height
+        Score = 0
+        if self.minimum_fill_height < warn_min:
+            Score = Score + 1
+        if self.minimum_fill_height < emerg_min:
+            Score = Score + 3
+        if self.initial_fill_height > warn_max:
+            Score = Score + 1
+        if self.initial_fill_height > emerg_max:
+            Score = Score + 3
+        if self.final_fill_height > warn_max:
+            Score = Score + 1
+        if self.final_fill_height > emerg_max:
+            Score = Score + 3
+        self.Score = Score
 
 king_bin = Bin_Parameter()
 dt = datetime.datetime.now()
