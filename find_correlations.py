@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
-import analysis
+import import_truck_data
+import correlations
 
 data_path = os.path.join(os.path.dirname(__file__), "original_data")
 output_path = os.path.join(os.path.dirname(__file__), "prepaired_data")
@@ -37,29 +38,6 @@ for i in range(len(list_of_files)):
     else:  
         combined_df = pd.concat([combined_df, level_data], ignore_index=True)
 
-print (combined_df)
+truck_data = import_truck_data()
 
-anal_data = read_df("crusher_data_for_analysis.csv",size=len(level_data))
-anal_data = anal_data.filter(items=["timestamp", "115YL12011A", "115YL12013A", ])
-anal_data['timestamp'] = pd.to_datetime(anal_data['timestamp'])
-anal_data = anal_data.rename(columns={"115YL12013A": "ampel_n", "115YL12011A": "ampel_s"})
-ampel_data = pd.merge(anal_data, level_data, left_on='timestamp', right_on='timestamp', how='inner')
-
-ampel_data["ampel_n"] = ampel_data["ampel_n"].str.slice(0,1)
-ampel_data["ampel_n"] = pd.to_numeric(ampel_data["ampel_n"], errors='coerce').dropna().astype(int)
-ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
-ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dropna().astype(int)
-#print(ampel_data["ampel_s"][300])
-#print(type(ampel_data["ampel_s"][300]))
-#ampel_data["ampel_n"] = ampel_data["ampel_n"].astype(int)
-#ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
-#ampel_data["ampel_s"] = ampel_data["ampel_s"].astype(int)
-
-#print(september_data_2.dtypes)
-# store_df( "ampel_hohe.csv", ampel_data)
-
-analysis.analysis_pit_lvl_data(combined_df)
-
-# print ('start of analysis of truck loads')
-# dataframe_truck_loads = ...
-# correlations.correlations(dataframe, dataframe_truck_loads)
+correlations (combined_df, truck_data)

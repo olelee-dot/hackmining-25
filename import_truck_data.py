@@ -12,5 +12,7 @@ def import_truck_data():
         combined_df = pd.concat([file1, file2, file3], ignore_index=True)
     else:
         print("Columns of the files are not the same")
+    
+    combined_df['Truck Discharge Date'] = pd.to_datetime(combined_df['Truck Discharge Date'])
 
     return combined_df

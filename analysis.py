@@ -11,9 +11,10 @@ def find_lin_section(data_frame):
 # input: raw data of pit level (pandas dataframe)
 # output: object (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
     data = data_frame['level'] # Data is the pit level data
-    traffic_light_north = data_frame["ampel_n"]
-    traffic_light_south = data_frame["ampel_n"]
+    # traffic_light_north = data_frame["ampel_n"]
+    # traffic_light_south = data_frame["ampel_n"]
 
+    data = data[data.applymap(lambda x: isinstance(x, (int, float))).all(axis=1)]
     peaks, _ = find_peaks(data, prominence = 1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
 
     # initialize empty list for Peak_To_Peak objects
@@ -41,13 +42,13 @@ def find_lin_section(data_frame):
 
         seconds_to_green = None
         no_green_light = 0
-        for j in range(peaks[i], peaks[i+1]): 
-            if (traffic_light_north[j] == 0 and traffic_light_north[j + 1] == 1) or (traffic_light_south[j] == 0 and traffic_light_south[j + 1] == 1):
-                seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
-                data_at_green_light = data[j]
-                break
-            if j == peaks[i+1] - 1:
-                no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
+        #for j in range(peaks[i], peaks[i+1]): 
+            #if (traffic_light_north[j] == 0 and traffic_light_north[j + 1] == 1) or (traffic_light_south[j] == 0 and traffic_light_south[j + 1] == 1):
+              #  seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
+              #  data_at_green_light = data[j]
+              #  break
+           # if j == peaks[i+1] - 1:
+             #   no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
     
         if seconds_to_green is not None:
             if crusher_speed > 0 and initial_feeder_speed < 0 and seconds_to_green < seconds_to_min_fill: # filter so that only data with relevant crusher and feeder speeds are considered
