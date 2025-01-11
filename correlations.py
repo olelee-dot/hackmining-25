@@ -21,6 +21,7 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
 ])
 
     # find the correlating truck of one object using the timestamp of the first peak and the last truck to unload before that timestamp
+    no_truck_found = 0
     for i in range (len(List_of_Peak_To_Peak)):
         preceding_trucks = dataframe_truck_loads[dataframe_truck_loads['Truck Discharge Date'] < List_of_Peak_To_Peak[i].timestamp_first_peak] 
         if not preceding_trucks.empty:
@@ -38,8 +39,11 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
                 }, ignore_index=True)
             else:
                 print ("No correlating truck found for peak-to-peak segement at', List_of_Peak_To_Peak[i].timestamp_first_peak")
+                no_truck_found = no_truck_found + 1
         else:
             print ("No correlating truck found for peak-to-peak segement at', List_of_Peak_To_Peak[i].timestamp_first_peak")
+            no_truck_found = no_truck_found + 1
+    print (f'No truck found for {no_truck_found} peak-to-peak segments')
 
     # drop rows with NaN values
     Data_frame_for_correlation.dropna(inplace=True)
