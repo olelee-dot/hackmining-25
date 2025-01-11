@@ -16,50 +16,47 @@ def read_df(filename: str, size=1000):
 def store_df(filename:str, df):
     df.to_csv(os.path.join(output_path, filename), index=False)
 
-def make_disp_smaller(df: pd.DataFrame):
+def create_disp():
+    df = read_df("Dispatch_260924-251024.xlsx")
     res = df[df["Destination"] == "CS03"]
     selected_columns = res[["Origin","Truck Discharge Date","Real Tons","Copper Grade","Soluble Copper Grade","Py","Iron","Arsenic","Deep Work Index" ,"Mo","Bond Work Index","Kao","Piro","Cp","Bn","Ill","Mus","Sulfide","PH","Sedimentation Rate"]]
     return selected_columns
 
+def create_combined_data(size=500000):
+    level_data = read_df("September.xlsx", size=size)
+    level_data = level_data.drop([0])
+    level_data = level_data.filter(items=["Timestamp", "115FE204_02M1RUN"," CO13_V0304S01", "CO13_V0306P03", "CO13_V0304E01", "115LIT12040A"])
+    level_data['Timestamp'] = pd.to_datetime(level_data['Timestamp'])
+    level_data = level_data.rename(columns={"Timestamp": "timestamp", "115FE204_02M1RUN": "feeder", "115LIT12040A": "level", "CO13_V0304S01": "crusher_speed", "CO13_V0306P03": "crusher_pressure", "CO13_V0304E01":"crusher_power"})
+    count = (level_data["feeder"] != "FUNCIONANDO").sum()
+    print(count)
+    changes = level_data["feeder"] != level_data["feeder"].shift()
+    # Count the number of changes (True values)
+    print(f"Wechsel : {changes.sum()}")
+    level_data = level_data[level_data["feeder"] ==  "FUNCIONANDO"]
+    level_data = level_data.filter(items=["timestamp", "level", "crusher_speed", "crusher_pressure", "crusher_power"])
 
-level_data = read_df("September.xlsx", size=100000)
-level_data = level_data.drop([0])
-level_data = level_data.filter(items=["Timestamp", "115FE204_02M1RUN"," CO13_V0304S01", "CO13_V0306P03", "CO13_V0304E01", "115LIT12040A"])
-level_data['Timestamp'] = pd.to_datetime(level_data['Timestamp'])
-level_data = level_data.rename(columns={"Timestamp": "timestamp"})
-level_data = level_data.rename(columns={"115FE204_02M1RUN": "feeder", "115LIT12040A": "level", "CO13_V0304S01": "crusher_speed", "CO13_V0306P03": "crusher_pressure", "CO13_V0304E01":"crusher_power"})
+    anal_data = read_df("crusher_data_for_analysis.csv",size=len(level_data))
+    anal_data = anal_data.filter(items=["timestamp", "115YL12011A", "115YL12013A", ])
+    anal_data['timestamp'] = pd.to_datetime(anal_data['timestamp'])
+    anal_data = anal_data.rename(columns={"115YL12013A": "ampel_n", "115YL12011A": "ampel_s"})
+    ampel_data = pd.merge(anal_data, level_data, left_on='timestamp', right_on='timestamp', how='inner')
+    
 
-anal_data = read_df("crusher_data_for_analysis.csv",size=len(level_data))
-anal_data = anal_data.filter(items=["timestamp", "115YL12011A", "115YL12013A", ])
-anal_data['timestamp'] = pd.to_datetime(anal_data['timestamp'])
-anal_data = anal_data.rename(columns={"115YL12013A": "ampel_n", "115YL12011A": "ampel_s"})
-ampel_data = pd.merge(anal_data, level_data, left_on='timestamp', right_on='timestamp', how='inner')
+    ampel_data["ampel_n"] = ampel_data["ampel_n"].str.slice(0,1)
+    ampel_data["ampel_n"] = pd.to_numeric(ampel_data["ampel_n"], errors='coerce').dropna().astype(int)
 
-ampel_data["ampel_n"] = ampel_data["ampel_n"].str.slice(0,1)
-ampel_data["ampel_n"] = pd.to_numeric(ampel_data["ampel_n"], errors='coerce').dropna().astype(int)
-ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
-ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dropna().astype(int)
-#print(ampel_data["ampel_s"][300])
-#print(type(ampel_data["ampel_s"][300]))
-#ampel_data["ampel_n"] = ampel_data["ampel_n"].astype(int)
-#ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
-#ampel_data["ampel_s"] = ampel_data["ampel_s"].astype(int)
-
-
-#print(september_data_2.dtypes)
-store_df( "ampel_hohe.csv", ampel_data)
-#store_df("ampel_data.csv", ampel_data)
-
+    ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
+    ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dropna().astype(int)
+    return ampel_data
 
 
-#crusher_data = read_df("crusher_data_for_analysis.csv")
-#disp = read_df("Dispatch_260924-251024.xlsx")
-#sep_data = read_df("September.xlsx")
-#disp = make_disp_smaller(disp)
-#store_df("test.csv", disp)
+if __name__ == "__main__":
+    disp = create_disp()
+    store_df("test.csv", disp)
+    combined_data = create_combined_data()
+    store_df( "ampel_hohe.csv", combined_data)
 
-
-#store_df("test.csv", crusher_data)
 
 
 
