@@ -1,16 +1,19 @@
 import correlations
 import analysis
-
+import os
 import pandas as pd
+
+data_path = os.path.join(os.path.dirname(__file__), "original_data")    # wenn alle dateien in origial_data sind
+#path = os.path.join(data_path, filename)
 
 number_of_rows = 1000
 
-ampel_data = pd.read_csv("/Users/mariemehlfeldt/Desktop/Hackmining-25/Hackathon_2024/Final_data_crusher_customer/crusher_data_for_analysis.csv", delimiter=";", nrows=number_of_rows)
+ampel_data = pd.read_csv(os.path.join(data_path, "crusher_data_for_analysis.csv"), delimiter=";", nrows=number_of_rows)
 ampel_data = ampel_data.filter(items=["timestamp", "115YL12013A"])
 ampel_data['timestamp'] = pd.to_datetime(ampel_data['timestamp'])
 ampel_data = ampel_data.rename(columns={"115YL12013A": "ampel_an_oder_aus"})
 
-level_data = pd.read_excel("/Users/mariemehlfeldt/Desktop/Hackmining-25/Hackathon_2024/Final_data_crusher_every_second/September.xlsx", nrows=number_of_rows+1)
+level_data = pd.read_excel(os.path.join(data_path, "September.xlsx"), nrows=number_of_rows+1)
 level_data = level_data.rename(columns={"Timestamp": "timestamp"})
 level_data = level_data.drop([0])
 level_data = level_data.filter(items=["timestamp", "115LIT12040A"])
