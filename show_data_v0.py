@@ -1,7 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("september_data.csv", delimiter=";", nrows=2000)
+df = pd.read_csv("september_data.csv", delimiter=";", nrows=1000)
+
+df['timestamp'] = pd.to_datetime(df['timestamp'])
 
 print(df.head())
 
@@ -32,7 +34,7 @@ plt.plot(df['timestamp'], df['level'], marker='o', label='Level')
 for start, end in on_spans:
     plt.axvspan(start, end, color='yellow', alpha=0.3)
 
-
+plt.xticks(pd.date_range(start=df['timestamp'].min(), end=df['timestamp'].max(), freq='T'))
 
 
 # Customize the plot
