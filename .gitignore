@@ -1,8 +1,8 @@
 .idea/*
 *.xlsx
 *.csv
-<<<<<<< HEAD
 .DS_Store
-=======
 !september_data.csv
->>>>>>> 731fce8a060392bacc6a34d6ab7cbcb5cac50b5f
+!ampel_data.csv
+__pycache__/*
+
