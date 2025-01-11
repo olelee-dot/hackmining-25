@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
-import find_lin_section
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import seaborn as sns
+import analysis
 
 def correlations (dataframe_pit_level, dataframe_truck_loads):
     # function to correlate the crusher speed, AUC of crusher, time to peak of crusher with characteristics of truck loads
     # inputs: dataframe_pit_level (pandas dataframe) with pit level data, dataframe_truck_loads (pandas dataframe) with truck load data
 
-    List_of_Peak_To_Peak = find_lin_section(dataframe_pit_level)
+    List_of_Peak_To_Peak = analysis.find_lin_section(dataframe_pit_level)
     # Initialisiere ein leeres DataFrame mit Spaltennamen
     Data_frame_for_correlation = pd.DataFrame(columns=[
     "Timestamp", 
