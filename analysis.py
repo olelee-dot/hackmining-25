@@ -2,8 +2,8 @@ import numpy as np
 from scipy.stats import shapiro
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
-import random
 from main import Bin_Parameter, Peak_To_Peak
+import pandas as pd
 
 # To do: adjust height, distance, prominence and width in find_peaks function AND min crusher speed and max feeder speed to to fit the data and limit artifacts 
 def find_lin_section(data_frame):
@@ -14,7 +14,8 @@ def find_lin_section(data_frame):
     # traffic_light_north = data_frame["ampel_n"]
     # traffic_light_south = data_frame["ampel_n"]
 
-    data = data[data.applymap(lambda x: isinstance(x, (int, float))).all(axis=1)]
+    data = pd.to_numeric(data, errors='coerce')  # Non-numeric values are converted to NaN
+    data = data.dropna()  # discards all NaN-values 
     peaks, _ = find_peaks(data, prominence = 1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
 
     # initialize empty list for Peak_To_Peak objects
@@ -90,8 +91,8 @@ def find_lin_section(data_frame):
                     data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
                     plt.plot(timestamp_slice, data_slice)
                     plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
-                    if seconds_to_green is not None:
-                        plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
+                    #if seconds_to_green is not None:
+                        #plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
                     plt.xlabel('Timestamp')
                     plt.ylabel('Fill Height')
                     plt.title(f'Segment from Peak {i} to Peak {i+1}')
