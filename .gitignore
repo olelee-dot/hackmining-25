@@ -3,5 +3,6 @@
 *.csv
 .DS_Store
 !september_data.csv
-
+!ampel_data.csv
 __pycache__/*
+
