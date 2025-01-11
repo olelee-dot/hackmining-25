@@ -13,12 +13,10 @@ class Bin_Parameter:
         return self.feederspeed_max*feederspeed_custom
 
 class Peak_To_Peak: 
-<<<<<<< HEAD
-    initial_fill_height = -1
-=======
+
     initial_fill_height = None
     initial_feeder_speed = None
->>>>>>> 731fce8a060392bacc6a34d6ab7cbcb5cac50b5f
+
     error_date = datetime.datetime.now()
     error_date = error_date.replace(minute=00, hour=00, second=00, year=1970, month=1, day=1)
     timestamp_first_peak = error_date
@@ -44,12 +42,9 @@ class Peak_To_Peak:
                  self.seconds_to_final_peak = seconds_to_final_peak
                  self.final_fill_height = final_fill_height
                  self.bin_parameter = bin_parameter
-
     
     def seconds_to_minimum(self):
-        return ((self.minimum_fill_height-self.initial_fill_height)/
-
-                (self.initial_feeder_speed*self.bin_parameter.get_feederspeed()))
+        return (self.minimum_fill_height-self.initial_fill_height)/self.bin_parameter.feederspeed_real(self.initial_feeder_speed_pct)
    
     def set_crusher_speed(self, crusher_speed):
         self.crusher_speed = crusher_speed
@@ -63,5 +58,4 @@ class Peak_To_Peak:
 king_bin = Bin_Parameter()
 dt = datetime.datetime.now()
 p2p_object = Peak_To_Peak(dt, 70, 0.65, 60, 60, 120, 70, king_bin)
-
 print(p2p_object.seconds_to_minimum())
