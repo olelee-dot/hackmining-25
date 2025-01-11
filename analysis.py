@@ -6,13 +6,13 @@ import random
 from main import Bin_Parameter, Peak_To_Peak
 
 # To do: adjust height, distance, prominence and width in find_peaks function AND min crusher speed and max feeder speed to to fit the data and limit artifacts 
-def find_lin_section(data_frame):
+def find_lin_section(data_frame, ampel_data):
 # function to subdivide a big continuous data set into smaller parts(from peak to peak, ergo one descending part and one ascending part)
 # input: raw data of pit level (pandas dataframe)
 # output: object (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
-    data = data_frame['level']
-    traffic_light_north = data_frame['Ampel_Nord']
-    traffic_light_south = data_frame['Ampel_Sued']
+    data = data_frame['level'] # Data is the pit level data
+    traffic_light_north = ampel_data["ampel_n"]
+    traffic_light_south = ampel_data["ampel_n"]
 
     peaks, _ = find_peaks(data, prominence = 1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
 
@@ -39,7 +39,7 @@ def find_lin_section(data_frame):
         seconds_to_green = None
         no_green_light = 0
         for j in range(peaks[i], peaks[i+1]): 
-            if (traffic_light_north[j][0] == 0 and traffic_light_north[j + 1][0] == 1) or (traffic_light_south[j][0] == 0 and traffic_light_south[j + 1][0] == 1):
+            if (traffic_light_north[j] == 0 and traffic_light_north[j + 1] == 1) or (traffic_light_south[j] == 0 and traffic_light_south[j + 1] == 1):
                 seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
                 break
             if j == peaks[i+1] - 1:
@@ -92,12 +92,12 @@ def find_lin_section(data_frame):
     return Peak_To_Peak_list
 
 
-def analysis_pit_lvl_data(dataframe_pit_level):
+def analysis_pit_lvl_data(data_frame, ampel_data):
     # function to analyse the data of the pit level
     # input: list of objects (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
     # output: mean and std of feeder and crusher speed, check for normal distribution of feeder and crusher speed
     
-    list_of_objects = find_lin_section (dataframe_pit_level)
+    list_of_objects = find_lin_section (data_frame, ampel_data)
 
     list_of_feeder_speeds = [obj.initial_feeder_speed_pct for obj in list_of_objects if obj.initial_feeder_speed_pct is not None]
     list_of_crusher_speeds = [obj.crusher_speed for obj in list_of_objects if obj.crusher_speed is not None]
@@ -132,7 +132,6 @@ def analysis_pit_lvl_data(dataframe_pit_level):
 
     print ("Mean of crusher speed:", mean_crusher_speed)
     print ("Standard deviation of crusher speed:", std_crusher_speed)
-    fig, axs = plt.subplots(nrows=2)
     if shapiro_p_crusher is not None:
         if shapiro_p_crusher > 0.05:
             print ("Crusher speed is normally distributed")
