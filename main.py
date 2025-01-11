@@ -29,6 +29,8 @@ class Peak_To_Peak:
     AUC = None
     timestamp_min_fill = None
     Score = None
+    Crusher_Pressure = None
+    Crusher_Power = None
 
     def __init__(self, timestamp_first_peak, initial_fill_height, initial_feeder_speed, 
                  minimum_fill_height, seconds_to_green, seconds_to_final_peak, 
@@ -53,6 +55,12 @@ class Peak_To_Peak:
     
     def set_seconds_to_minfill(self, timestamp_min_fill):
         self.timestamp_min_fill = timestamp_min_fill
+
+    def set_crusher_pressure(self, Crusher_Pressure):
+        self.Crusher_Pressure = Crusher_Pressure
+    
+    def set_crusher_power(self, Crusher_Power):
+        self.Crusher_Power = Crusher_Power
 
     def calculate_score (self):
         warn_max = self.bin_parameter.warning_maximum_height

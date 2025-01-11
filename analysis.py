@@ -23,7 +23,7 @@ def find_lin_section(data_frame, ampel_data):
     for i in range(len(peaks)-1):
         timestamp_first_peak = data_frame['timestamp'][peaks[i]] # absolute timestamp of the first peak
         seconds_to_final_peak = data_frame['timestamp'][peaks[i+1]] - timestamp_first_peak # relative time between start and end of segment
-        Index_min_fill = np.argmin (data[peaks[i]:peaks [i+1]]) # index of the minimum fill height
+        Index_min_fill = np.argmin (data[peaks[i]:peaks [i+1]]) # index of the minimum fill height relative to peaks[i]
         seconds_to_min_fill = data_frame['timestamp'][peaks[i]+Index_min_fill] - timestamp_first_peak # relative time between start of segment and minimum fill height
 
         initial_fill_height = data[peaks[i]]
@@ -31,6 +31,9 @@ def find_lin_section(data_frame, ampel_data):
         minimum_fill_height = np.min (data[peaks[i]:peaks [i+1]])
 
         initial_feeder_speed = (minimum_fill_height - data[peaks[i]])/seconds_to_min_fill.total_seconds()
+
+        avg_crusher_pressure = np.mean(data_frame['crusher_pressure'][peaks[i] + Index_min_fill:peaks[i+1]])
+        avg_crusher_power = np.mean(data_frame['crusher_power'][peaks[i] + Index_min_fill:peaks[i+1]])
         
         # crusher_speed is corrected for the initial_feeder_speed under the assumption that the crusher speed is constant for this segment
         crusher_speed = (final_fill_height - minimum_fill_height)/seconds_to_final_peak.total_seconds() - initial_feeder_speed
@@ -41,10 +44,11 @@ def find_lin_section(data_frame, ampel_data):
         for j in range(peaks[i], peaks[i+1]): 
             if (traffic_light_north[j] == 0 and traffic_light_north[j + 1] == 1) or (traffic_light_south[j] == 0 and traffic_light_south[j + 1] == 1):
                 seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
+                data_at_green_light = data[j]
                 break
             if j == peaks[i+1] - 1:
                 no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
-        print (f'No green light found for {no_green_light} peaks')
+    
         
         if crusher_speed > 0 and initial_feeder_speed < 0: # filter so that only data with relevant crusher and feeder speeds are considered
             peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
@@ -52,6 +56,8 @@ def find_lin_section(data_frame, ampel_data):
             peak_to_peak_object.set_AUC (AUC_crusher)
             peak_to_peak_object.set_seconds_to_minfill (seconds_to_min_fill)
             peak_to_peak_object.calculate_score()
+            peak_to_peak_object.set_crusher_pressure(avg_crusher_pressure)
+            peak_to_peak_object.set_crusher_power(avg_crusher_power)
             Peak_To_Peak_list.append (peak_to_peak_object)
 
         if i < 10:
@@ -83,11 +89,14 @@ def find_lin_section(data_frame, ampel_data):
             data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
             plt.plot(timestamp_slice, data_slice)
             plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
+            if seconds_to_green is not None:
+                plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
             plt.xlabel('Timestamp')
             plt.ylabel('Fill Height')
             plt.title(f'Segment from Peak {i} to Peak {i+1}')
             plt.show()  # Display the plot for the current segment
 
+    print (f'No green light found for {no_green_light} peaks')
     print ('A list of Peak_To_Peak objects has been created with', len (Peak_To_Peak_list), 'objects')
     return Peak_To_Peak_list
 
