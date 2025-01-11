@@ -49,52 +49,52 @@ def find_lin_section(data_frame):
             if j == peaks[i+1] - 1:
                 no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
     
-        
-        if crusher_speed > 0 and initial_feeder_speed < 0: # filter so that only data with relevant crusher and feeder speeds are considered
-            peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
-            peak_to_peak_object.set_crusher_speed (crusher_speed)
-            peak_to_peak_object.set_AUC (AUC_crusher)
-            peak_to_peak_object.set_seconds_to_minfill (seconds_to_min_fill)
-            peak_to_peak_object.calculate_score()
-            peak_to_peak_object.set_crusher_pressure(avg_crusher_pressure)
-            peak_to_peak_object.set_crusher_power(avg_crusher_power)
-            Peak_To_Peak_list.append (peak_to_peak_object)
+        if seconds_to_green is not None:
+            if crusher_speed > 0 and initial_feeder_speed < 0 and seconds_to_green < seconds_to_min_fill: # filter so that only data with relevant crusher and feeder speeds are considered
+                peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
+                peak_to_peak_object.set_crusher_speed (crusher_speed)
+                peak_to_peak_object.set_AUC (AUC_crusher)
+                peak_to_peak_object.set_seconds_to_minfill (seconds_to_min_fill)
+                peak_to_peak_object.calculate_score()
+                peak_to_peak_object.set_crusher_pressure(avg_crusher_pressure)
+                peak_to_peak_object.set_crusher_power(avg_crusher_power)
+                Peak_To_Peak_list.append (peak_to_peak_object)
 
-        if i < 10:
-            print(f'---------------------------------------------------')
-            print(f'Peak_To_Peak object created with the following attributes:')
-            print(f'Timestamp of first peak: {timestamp_first_peak}')
-            print(f'Initial fill height: {initial_fill_height}')
-            print(f'Initial feeder speed: {initial_feeder_speed}')
-            print(f'Minimum fill height: {minimum_fill_height}')
-            print(f'Seconds to min fill: {seconds_to_min_fill}')
-            print(f'Seconds to final peak: {seconds_to_final_peak}')
-            print(f'Final fill height: {final_fill_height}')
-            print(f'Crusher speed: {crusher_speed}')
-            print(f'AUC of crusher: {AUC_crusher}')
-            print(f'Seconds to green light: {seconds_to_green}')
-            print(f'---------------------------------------------------')
+                if i < 30:
+                    print(f'---------------------------------------------------')
+                    print(f'Peak_To_Peak object created with the following attributes:')
+                    print(f'Timestamp of first peak: {timestamp_first_peak}')
+                    print(f'Initial fill height: {initial_fill_height}')
+                    print(f'Initial feeder speed: {initial_feeder_speed}')
+                    print(f'Minimum fill height: {minimum_fill_height}')
+                    print(f'Seconds to min fill: {seconds_to_min_fill}')
+                    print(f'Seconds to final peak: {seconds_to_final_peak}')
+                    print(f'Final fill height: {final_fill_height}')
+                    print(f'Crusher speed: {crusher_speed}')
+                    print(f'AUC of crusher: {AUC_crusher}')
+                    print(f'Seconds to green light: {seconds_to_green}')
+                    print(f'---------------------------------------------------')
 
-            # plot the data of this segment: plot data + borders_for_plot before and after the segment
-            if peaks[i] < 1000:
-                plot_margin_start = peaks[i]
-            else:
-                plot_margin_start = 1000
-            if peaks[i+1] + 1000 > len(data):
-                plot_margin_end = len(data) - peaks[i+1]
-            else:
-                plot_margin_end = 1000
+                    # plot the data of this segment: plot data + borders_for_plot before and after the segment
+                    if peaks[i] < 1000:
+                        plot_margin_start = peaks[i]
+                    else:
+                        plot_margin_start = 1000
+                    if peaks[i+1] + 1000 > len(data):
+                        plot_margin_end = len(data) - peaks[i+1]
+                    else:
+                        plot_margin_end = 1000
 
-            timestamp_slice = data_frame['timestamp'][peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
-            data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
-            plt.plot(timestamp_slice, data_slice)
-            plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
-            if seconds_to_green is not None:
-                plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
-            plt.xlabel('Timestamp')
-            plt.ylabel('Fill Height')
-            plt.title(f'Segment from Peak {i} to Peak {i+1}')
-            plt.show()  # Display the plot for the current segment
+                    timestamp_slice = data_frame['timestamp'][peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
+                    data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
+                    plt.plot(timestamp_slice, data_slice)
+                    plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
+                    if seconds_to_green is not None:
+                        plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
+                    plt.xlabel('Timestamp')
+                    plt.ylabel('Fill Height')
+                    plt.title(f'Segment from Peak {i} to Peak {i+1}')
+                    plt.show()  # Display the plot for the current segment
 
     print (f'No green light found for {no_green_light} peaks')
     print ('A list of Peak_To_Peak objects has been created with', len (Peak_To_Peak_list), 'objects')

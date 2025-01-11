@@ -23,7 +23,7 @@ def make_disp_smaller(df: pd.DataFrame):
     return selected_columns
 
 
-level_data = read_df("September.xlsx", size=100000)
+level_data = read_df("September.xlsx", size=1000000)
 level_data = level_data.drop([0])
 level_data = level_data.filter(items=["Timestamp", "115FE204_02M1RUN"," CO13_V0304S01", "CO13_V0306P03", "CO13_V0304E01", "115LIT12040A"])
 level_data['Timestamp'] = pd.to_datetime(level_data['Timestamp'])
