@@ -12,11 +12,9 @@ class Bin_Parameter:
     def feederspeed_real(self, feederspeed_custom): 
         return self.feederspeed_max*feederspeed_custom
 
-class Peak_To_Peak: 
-
+class Peak_To_Peak:
     initial_fill_height = None
     initial_feeder_speed = None
-
     error_date = datetime.datetime.now()
     error_date = error_date.replace(minute=00, hour=00, second=00, year=1970, month=1, day=1)
     timestamp_first_peak = error_date
@@ -52,7 +50,7 @@ class Peak_To_Peak:
     def set_AUC(self, AUC):
         self.AUC = AUC
     
-    def set_timestamp_min_fill(self, timestamp_min_fill):
+    def set_seconds_to_minfill(self, timestamp_min_fill):
         self.timestamp_min_fill = timestamp_min_fill
 
 king_bin = Bin_Parameter()
