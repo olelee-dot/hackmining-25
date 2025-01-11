@@ -12,13 +12,9 @@ class Bin_Parameter:
     def feederspeed_real(self, feederspeed_custom): 
         return self.feederspeed_max*feederspeed_custom
 
-class Peak_To_Peak: 
-<<<<<<< HEAD
-    initial_fill_height = -1
-=======
+class Peak_To_Peak:
     initial_fill_height = None
     initial_feeder_speed = None
->>>>>>> 731fce8a060392bacc6a34d6ab7cbcb5cac50b5f
     error_date = datetime.datetime.now()
     error_date = error_date.replace(minute=00, hour=00, second=00, year=1970, month=1, day=1)
     timestamp_first_peak = error_date
