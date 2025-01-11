@@ -6,13 +6,13 @@ import random
 from main import Bin_Parameter, Peak_To_Peak
 
 # To do: adjust height, distance, prominence and width in find_peaks function AND min crusher speed and max feeder speed to to fit the data and limit artifacts 
-def find_lin_section(data_frame, ampel_data):
+def find_lin_section(data_frame):
 # function to subdivide a big continuous data set into smaller parts(from peak to peak, ergo one descending part and one ascending part)
 # input: raw data of pit level (pandas dataframe)
 # output: object (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
     data = data_frame['level'] # Data is the pit level data
-    traffic_light_north = ampel_data["ampel_n"]
-    traffic_light_south = ampel_data["ampel_n"]
+    traffic_light_north = data_frame["ampel_n"]
+    traffic_light_south = data_frame["ampel_n"]
 
     peaks, _ = find_peaks(data, prominence = 1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
 
@@ -101,12 +101,12 @@ def find_lin_section(data_frame, ampel_data):
     return Peak_To_Peak_list
 
 
-def analysis_pit_lvl_data(data_frame, ampel_data):
+def analysis_pit_lvl_data(ampel_data):
     # function to analyse the data of the pit level
     # input: list of objects (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
     # output: mean and std of feeder and crusher speed, check for normal distribution of feeder and crusher speed
     
-    list_of_objects = find_lin_section (data_frame, ampel_data)
+    list_of_objects = find_lin_section (ampel_data)
 
     list_of_feeder_speeds = [obj.initial_feeder_speed_pct for obj in list_of_objects if obj.initial_feeder_speed_pct is not None]
     list_of_crusher_speeds = [obj.crusher_speed for obj in list_of_objects if obj.crusher_speed is not None]
