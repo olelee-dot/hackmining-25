@@ -7,12 +7,12 @@ class Bin_Parameter:
     warning_maximum_height = 76.92
     emergency_stop_minimum_height = 30.77
     emergency_stop_maximum_height = 87
-    feederspeed_max = -2.05267           # Feeder speed in percent/second
+    feederspeed_max = -2.05267 # Feeder speed in percent/second
 
-    def get_feederspeed(self):
-        return self.feederspeed_max
+    def feederspeed_real(self, feederspeed_custom): 
+        return self.feederspeed_max*feederspeed_custom
 
-class Peak_To_Peak: 
+class Peak_To_Peak:
     initial_fill_height = None
     initial_feeder_speed = None
     error_date = datetime.datetime.now()
@@ -33,17 +33,19 @@ class Peak_To_Peak:
                  minimum_fill_height, seconds_to_green, seconds_to_final_peak, 
                  final_fill_height, bin_parameter): 
                  self.initial_fill_height = initial_fill_height
-                 self.initial_feeder_speed = initial_feeder_speed
+                 self.initial_feeder_speed_pct = initial_feeder_speed
                  self.timestamp_first_peak = timestamp_first_peak
                  self.minimum_fill_height = minimum_fill_height
                  self.seconds_to_green = seconds_to_green
                  self.seconds_to_final_peak = seconds_to_final_peak
                  self.final_fill_height = final_fill_height
                  self.bin_parameter = bin_parameter
+
     
-    def seconds_to_minimum(self): 
+    def seconds_to_minimum(self):
         return ((self.minimum_fill_height-self.initial_fill_height)/
-                 self.initial_feeder_speed*self.bin_parameter.get_feederspeed())
+
+                (self.initial_feeder_speed*self.bin_parameter.get_feederspeed()))
    
     def set_crusher_speed(self, crusher_speed):
         self.crusher_speed = crusher_speed
@@ -56,5 +58,6 @@ class Peak_To_Peak:
 
 king_bin = Bin_Parameter()
 dt = datetime.datetime.now()
-p2p_object = Peak_To_Peak(dt, 70, 65, 60, 60, 120, 70, king_bin)
+p2p_object = Peak_To_Peak(dt, 70, 0.65, 60, 60, 120, 70, king_bin)
+
 print(p2p_object.seconds_to_minimum())
