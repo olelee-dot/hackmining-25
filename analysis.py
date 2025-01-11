@@ -13,7 +13,7 @@ def find_lin_section(data_frame):
     data = data_frame['level']
     traffic_light = data_frame['ampel_an_oder_aus']
 
-    peaks, _ = find_peaks(data, height = 30, distance = 180) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
+    peaks, _ = find_peaks(data, prominence=1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
     
     # initialize empty list for Peak_To_Peak objects
     Peak_To_Peak_list = []
