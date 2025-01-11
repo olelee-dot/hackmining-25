@@ -102,9 +102,11 @@ def analysis_pit_lvl_data(dataframe_pit_level):
 
     for i, obj in enumerate(list_of_objects):
         if obj.initial_feeder_speed is not None:
-            list_of_feeder_speeds.append(obj.initial_feeder_speed)
+            list_of_feeder_speeds[i] = obj.initial_feeder_speed
+            #print (f'Feeder speed of object {i}: obj.initial_feeder_speed}')
         if obj.crusher_speed is not None:
-            list_of_crusher_speeds.append(obj.crusher_speed)
+            list_of_crusher_speeds[i] = obj.crusher_speed
+            print (f'Crusher speed of object {i}: {obj.crusher_speed}')
 
     # calculate mean and std of feeder and crusher speed    
     mean_feeder_speed = np.mean(list_of_feeder_speeds)
