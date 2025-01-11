@@ -45,16 +45,17 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
         preceding_trucks = dataframe_truck_loads[dataframe_truck_loads['Truck Discharge Date'] < List_of_Peak_To_Peak[i].timestamp_first_peak] 
         if not preceding_trucks.empty:
             correlating_truck = preceding_trucks.iloc[-1] # last preceding truck
+            print ("For peak-to-peak segment at", List_of_Peak_To_Peak[i].timestamp_first_peak, "the correlating truck discharged at", correlating_truck['Truck Discharge Date'])
             if correlating_truck['Truck Discharge Date'] > List_of_Peak_To_Peak[i].timestamp_first_peak - pd.Timedelta(minutes=2):
-                # Füge eine neue Zeile ins DataFrame ein
-                Data_frame_for_correlation = Data_frame_for_correlation.append({
+                # create a new row as a dictionary
+                new_row = {
                     "Timestamp_first_peak": List_of_Peak_To_Peak[i].timestamp_first_peak,
                     "Timestamp_truck_discharge": correlating_truck['Truck Discharge Date'],
                     "Crusher_Speed": List_of_Peak_To_Peak[i].crusher_speed,
                     "AUC": List_of_Peak_To_Peak[i].AUC,
                     "Crusher Power": List_of_Peak_To_Peak[i].Crusher_Power,
                     "Crusher Pressure": List_of_Peak_To_Peak[i].Crusher_Pressure,
-                    "Seconds_From_Min_To_Final_Peak": List_of_Peak_To_Peak[i].seconds_to_final_peak - List_of_Peak_To_Peak[i].timestamp_min_fill,
+                    "Seconds_From_Min_To_Final_Peak": List_of_Peak_To_Peak[i].seconds_to_final_peak - List_of_Peak_To_Peak[i].seconds_to_min_fill,
                     "weight": correlating_truck['real tons'],
                     "Copper Grade": correlating_truck['Copper Grade'],
                     "Soluble Copper Grade": correlating_truck['Soluble Copper Grade'],
@@ -74,9 +75,13 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
                     "PH": correlating_truck['PH'],
                     "Sedimentation Rate": correlating_truck['Sedimentation Rate'],
                     "Abrasiveness Index": correlating_truck['Abrasiveness Index']
-                }, ignore_index=True)
+                }
+
+                # Convert the new row into a DataFrame and concatenate
+                new_row_df = pd.DataFrame([new_row])
+                Data_frame_for_correlation = pd.concat([Data_frame_for_correlation, new_row_df], ignore_index=True)
             else:
-                print ("No correlating truck found for peak-to-peak segement at', List_of_Peak_To_Peak[i].timestamp_first_peak")
+                print(f"No correlating truck found for peak-to-peak segment at {List_of_Peak_To_Peak[i].timestamp_first_peak}")
                 no_truck_found = no_truck_found + 1
         else:
             print ("No correlating truck found for peak-to-peak segement at', List_of_Peak_To_Peak[i].timestamp_first_peak")
@@ -99,7 +104,7 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
                     significant_correlations.append((col_a, col_b, corr_value))
 
     # print significant correlations
-    print("correlations above the threshold of ", correlation_threshold, ")")
+    print(f"correlations above the threshold of {correlation_threshold})")
     for col_a, col_b, corr_value in significant_correlations:
         print(f"{col_a} vs {col_b}: {corr_value:.2f}")
 

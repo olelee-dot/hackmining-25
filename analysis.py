@@ -23,26 +23,26 @@ def find_lin_section(data_frame):
     king_bin = Bin_Parameter() # initialize the bin parameter object
 
     for i in range(len(peaks)-1):
-        timestamp_first_peak = data_frame['timestamp'][peaks[i]] # absolute timestamp of the first peak
-        seconds_to_final_peak = data_frame['timestamp'][peaks[i+1]] - timestamp_first_peak # relative time between start and end of segment
-        Index_min_fill = np.argmin (data[peaks[i]:peaks [i+1]]) # index of the minimum fill height relative to peaks[i]
-        seconds_to_min_fill = data_frame['timestamp'][peaks[i]+Index_min_fill] - timestamp_first_peak # relative time between start of segment and minimum fill height
+        try:
+            timestamp_first_peak = data_frame['timestamp'][peaks[i]] # absolute timestamp of the first peak
+            seconds_to_final_peak = data_frame['timestamp'][peaks[i+1]] - timestamp_first_peak # relative time between start and end of segment
+            Index_min_fill = np.argmin (data[peaks[i]:peaks [i+1]]) # index of the minimum fill height relative to peaks[i]
+            seconds_to_min_fill = data_frame['timestamp'][peaks[i]+Index_min_fill] - timestamp_first_peak # relative time between start of segment and minimum fill height
 
-        initial_fill_height = data[peaks[i]]
-        final_fill_height = data[peaks[i+1]]
-        minimum_fill_height = np.min (data[peaks[i]:peaks [i+1]])
+            initial_fill_height = data[peaks[i]]
+            final_fill_height = data[peaks[i+1]]
+            minimum_fill_height = np.min (data[peaks[i]:peaks [i+1]])
 
-        initial_feeder_speed = (minimum_fill_height - data[peaks[i]])/seconds_to_min_fill.total_seconds()
+            initial_feeder_speed = (minimum_fill_height - data[peaks[i]])/seconds_to_min_fill.total_seconds()
 
-        avg_crusher_pressure = np.mean(data_frame['crusher_pressure'][peaks[i] + Index_min_fill:peaks[i+1]])
-        avg_crusher_power = np.mean(data_frame['crusher_power'][peaks[i] + Index_min_fill:peaks[i+1]])
-        
-        # crusher_speed is corrected for the initial_feeder_speed under the assumption that the crusher speed is constant for this segment
-        crusher_speed = (final_fill_height - minimum_fill_height)/seconds_to_final_peak.total_seconds() - initial_feeder_speed
-        AUC_crusher = (minimum_fill_height + final_fill_height) * 0.5 * (seconds_to_final_peak.total_seconds() - seconds_to_min_fill.total_seconds())
+            avg_crusher_pressure = np.mean(data_frame['crusher_pressure'][peaks[i] + Index_min_fill:peaks[i+1]])
+            avg_crusher_power = np.mean(data_frame['crusher_power'][peaks[i] + Index_min_fill:peaks[i+1]])
+            
+            # crusher_speed is corrected for the initial_feeder_speed under the assumption that the crusher speed is constant for this segment
+            crusher_speed = (final_fill_height - minimum_fill_height)/seconds_to_final_peak.total_seconds() - initial_feeder_speed
+            AUC_crusher = (minimum_fill_height + final_fill_height) * 0.5 * (seconds_to_final_peak.total_seconds() - seconds_to_min_fill.total_seconds())
 
-        seconds_to_green = None
-        no_green_light = 0
+            seconds_to_green = None
         #for j in range(peaks[i], peaks[i+1]): 
             #if (traffic_light_north[j] == 0 and traffic_light_north[j + 1] == 1) or (traffic_light_south[j] == 0 and traffic_light_south[j + 1] == 1):
               #  seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
@@ -50,9 +50,7 @@ def find_lin_section(data_frame):
               #  break
            # if j == peaks[i+1] - 1:
              #   no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
-    
-        if seconds_to_green is not None:
-            if crusher_speed > 0 and initial_feeder_speed < 0 and seconds_to_green < seconds_to_min_fill: # filter so that only data with relevant crusher and feeder speeds are considered
+            if initial_feeder_speed < 0 and crusher_speed > 0:
                 peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
                 peak_to_peak_object.set_crusher_speed (crusher_speed)
                 peak_to_peak_object.set_AUC (AUC_crusher)
@@ -62,43 +60,48 @@ def find_lin_section(data_frame):
                 peak_to_peak_object.set_crusher_power(avg_crusher_power)
                 Peak_To_Peak_list.append (peak_to_peak_object)
 
-                if i < 30:
-                    print(f'---------------------------------------------------')
-                    print(f'Peak_To_Peak object created with the following attributes:')
-                    print(f'Timestamp of first peak: {timestamp_first_peak}')
-                    print(f'Initial fill height: {initial_fill_height}')
-                    print(f'Initial feeder speed: {initial_feeder_speed}')
-                    print(f'Minimum fill height: {minimum_fill_height}')
-                    print(f'Seconds to min fill: {seconds_to_min_fill}')
-                    print(f'Seconds to final peak: {seconds_to_final_peak}')
-                    print(f'Final fill height: {final_fill_height}')
-                    print(f'Crusher speed: {crusher_speed}')
-                    print(f'AUC of crusher: {AUC_crusher}')
-                    print(f'Seconds to green light: {seconds_to_green}')
-                    print(f'---------------------------------------------------')
+            if i == 0:
+                print(f'---------------------------------------------------')
+                print(f'Peak_To_Peak object created with the following attributes:')
+                print(f'Timestamp of first peak: {timestamp_first_peak}')
+                print(f'Initial fill height: {initial_fill_height}')
+                print(f'Initial feeder speed: {initial_feeder_speed}')
+                print(f'Minimum fill height: {minimum_fill_height}')
+                print(f'Seconds to min fill: {seconds_to_min_fill}')
+                print(f'Seconds to final peak: {seconds_to_final_peak}')
+                print(f'Final fill height: {final_fill_height}')
+                print(f'Crusher speed: {crusher_speed}')
+                print(f'AUC of crusher: {AUC_crusher}')
+                print(f'Seconds to green light: {seconds_to_green}')
+                print(f'---------------------------------------------------')
 
-                    # plot the data of this segment: plot data + borders_for_plot before and after the segment
-                    if peaks[i] < 1000:
-                        plot_margin_start = peaks[i]
-                    else:
-                        plot_margin_start = 1000
-                    if peaks[i+1] + 1000 > len(data):
-                        plot_margin_end = len(data) - peaks[i+1]
-                    else:
-                        plot_margin_end = 1000
+                # plot the data of this segment: plot data + borders_for_plot before and after the segment
+                if peaks[i] < 1000:
+                    plot_margin_start = peaks[i]
+                else:
+                    plot_margin_start = 1000
+                if peaks[i+1] + 1000 > len(data):
+                    plot_margin_end = len(data) - peaks[i+1]
+                else:
+                    plot_margin_end = 1000
 
-                    timestamp_slice = data_frame['timestamp'][peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
-                    data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
-                    plt.plot(timestamp_slice, data_slice)
-                    plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
-                    #if seconds_to_green is not None:
-                        #plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
-                    plt.xlabel('Timestamp')
-                    plt.ylabel('Fill Height')
-                    plt.title(f'Segment from Peak {i} to Peak {i+1}')
-                    plt.show()  # Display the plot for the current segment
+                timestamp_slice = data_frame['timestamp'][peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
+                data_slice = data[peaks[i]-plot_margin_start:peaks[i+1]+plot_margin_end]
+                plt.plot(timestamp_slice, data_slice)
+                plt.plot([timestamp_first_peak, timestamp_first_peak + seconds_to_min_fill, timestamp_first_peak + seconds_to_final_peak], [initial_fill_height, minimum_fill_height, final_fill_height], 'ro')
+                #if seconds_to_green is not None:
+                    #plt.plot ([timestamp_first_peak + seconds_to_green], [data_at_green_light], 'go')
+                plt.xlabel('Timestamp')
+                plt.ylabel('Fill Height')
+                plt.title(f'Segment from Peak {i} to Peak {i+1}')
+                plt.show()  # Display the plot for the current segment
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        except ValueError as e:
+            print(f"ValueError aufgetreten: {e}")
+        except Exception as e:
+            print(f"Ein unerwarteter Fehler ist aufgetreten: {e}")
 
-    print (f'No green light found for {no_green_light} peaks')
     print ('A list of Peak_To_Peak objects has been created with', len (Peak_To_Peak_list), 'objects')
     return Peak_To_Peak_list
 
@@ -118,6 +121,18 @@ def analysis_pit_lvl_data(ampel_data):
     std_feeder_speed = np.std(list_of_feeder_speeds)
     mean_crusher_speed = np.mean(list_of_crusher_speeds)
     std_crusher_speed = np.std(list_of_crusher_speeds)
+
+    # Save the lists as CSV files
+    feeder_speeds_df = pd.DataFrame({'Feeder_Speeds': list_of_feeder_speeds})
+    crusher_speeds_df = pd.DataFrame({'Crusher_Speeds': list_of_crusher_speeds})
+
+    # Specify the file paths
+    feeder_csv_path = "feeder_speeds.csv"
+    crusher_csv_path = "crusher_speeds.csv"
+
+    # Save to CSV
+    feeder_speeds_df.to_csv(feeder_csv_path, index=False)
+    crusher_speeds_df.to_csv(crusher_csv_path, index=False)
     
     # check for normal distribution of feeder and crusher speed using the Shapiro-Wilk test
     if len(list_of_feeder_speeds) > 0:
