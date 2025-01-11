@@ -51,7 +51,7 @@ class Peak_To_Peak:
     def set_AUC(self, AUC):
         self.AUC = AUC
     
-    def set_timestamp_min_fill(self, timestamp_min_fill):
+    def set_seconds_to_minfill(self, timestamp_min_fill):
         self.timestamp_min_fill = timestamp_min_fill
 
 king_bin = Bin_Parameter()
