@@ -13,8 +13,8 @@ def find_lin_section(data_frame):
     data = data_frame['level']
     traffic_light = data_frame['ampel_an_oder_aus']
 
-    peaks, _ = find_peaks(data, height = 30, distance = 180) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
-    
+    peaks, _ = find_peaks(data, prominence=1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
+
     # initialize empty list for Peak_To_Peak objects
     Peak_To_Peak_list = []
     king_bin = Bin_Parameter() # initialize the bin parameter object
@@ -36,10 +36,12 @@ def find_lin_section(data_frame):
         AUC_crusher = (minimum_fill_height + final_fill_height) * 0.5 * (seconds_to_final_peak.total_seconds() - seconds_to_min_fill.total_seconds())
 
         seconds_to_green = None
-        for j in range(peaks [i], peaks [i+1]): # find the first green light after the first peak
+        for j in range(peaks[i], peaks[i+1]): 
             if traffic_light[j] == 0 and traffic_light[j + 1] == 1:
-                seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak # relative time between start of segment and green light
+                seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
                 break
+            if j == peaks[i+1] - 1:
+                print(f"No green light found between peaks {i} and {i+1}")
         
         # if crusher_speed > 0 and initial_feeder_speed < 0: # filter so that only data with relevant crusher and feeder speeds are considered
         peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
