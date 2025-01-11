@@ -11,7 +11,8 @@ def find_lin_section(data_frame):
 # input: raw data of pit level (pandas dataframe)
 # output: object (class written by Ole and Lukas) with attributes describing the ascend and descend of the pit level
     data = data_frame['level']
-    traffic_light = data_frame['ampel_an_oder_aus']
+    traffic_light_north = data_frame['Ampel_Nord']
+    traffic_light_south = data_frame['Ampel_Sued']
 
     peaks, _ = find_peaks(data, prominence = 1) # peaks are the indices of the peaks in the data, minimum height, distance between peaks, prominence and width can be adjusted
 
@@ -36,19 +37,21 @@ def find_lin_section(data_frame):
         AUC_crusher = (minimum_fill_height + final_fill_height) * 0.5 * (seconds_to_final_peak.total_seconds() - seconds_to_min_fill.total_seconds())
 
         seconds_to_green = None
-        # no_green_light = 0
-        # for j in range(peaks[i], peaks[i+1]): 
-            # if traffic_light[j][0] == 0 and traffic_light[j + 1][0] == 1:
-               #  seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
-               #  break
-            # if j == peaks[i+1] - 1:
-               #  no_green_light = no_green_light + 1
+        no_green_light = 0
+        for j in range(peaks[i], peaks[i+1]): 
+            if (traffic_light_north[j][0] == 0 and traffic_light_north[j + 1][0] == 1) or (traffic_light_south[j][0] == 0 and traffic_light_south[j + 1][0] == 1):
+                seconds_to_green = data_frame['timestamp'][j] - timestamp_first_peak
+                break
+            if j == peaks[i+1] - 1:
+                no_green_light = no_green_light + 1 # counts the number of segments without a corresponding green light
+        print (f'No green light found for {no_green_light} peaks')
         
         if crusher_speed > 0 and initial_feeder_speed < 0: # filter so that only data with relevant crusher and feeder speeds are considered
             peak_to_peak_object = Peak_To_Peak(timestamp_first_peak, initial_fill_height, initial_feeder_speed, minimum_fill_height, seconds_to_green, seconds_to_final_peak, final_fill_height, king_bin)
             peak_to_peak_object.set_crusher_speed (crusher_speed)
             peak_to_peak_object.set_AUC (AUC_crusher)
             peak_to_peak_object.set_seconds_to_minfill (seconds_to_min_fill)
+            peak_to_peak_object.calculate_score()
             Peak_To_Peak_list.append (peak_to_peak_object)
 
         if i < 10:

@@ -8,7 +8,7 @@ data_path = os.path.join(os.path.dirname(__file__), "original_data")    # wenn a
 
 number_of_rows = 100000000
 
-ampel_data = pd.read_csv(os.path.join(data_path, "crusher_data_for_analysis.csv"), delimiter=";", nrows=number_of_rows)
+ampel_data = pd.read_csv(os.path.join(data_path, "ampel_data.csv"), delimiter=";", nrows=number_of_rows)
 ampel_data = ampel_data.filter(items=["timestamp", "115YL12013A"])
 ampel_data['timestamp'] = pd.to_datetime(ampel_data['timestamp'])
 ampel_data = ampel_data.rename(columns={"115YL12013A": "ampel_an_oder_aus"})
