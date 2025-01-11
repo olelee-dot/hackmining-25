@@ -36,11 +36,11 @@ class Peak_To_Peak:
                  self.final_fill_height = final_fill_height
                  self.bin_parameter = bin_parameter
     
-    def seconds_to_minimum(self): 
+    def seconds_to_minimum(self):
         return ((self.minimum_fill_height-self.initial_fill_height)/
-                 self.initial_feeder_speed*self.bin_parameter.get_feederspeed())
+                (self.initial_feeder_speed*self.bin_parameter.get_feederspeed()))
 
 king_bin = Bin_Parameter()
 dt = datetime.datetime.now()
-p2p_object = Peak_To_Peak(dt, 70, 65, 60, 60, 120, 70, king_bin)
+p2p_object = Peak_To_Peak(dt, 70, 0.65, 60, 60, 120, 70, king_bin)
 print(p2p_object.seconds_to_minimum())
