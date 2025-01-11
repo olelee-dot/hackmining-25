@@ -22,22 +22,33 @@ def make_disp_smaller(df: pd.DataFrame):
     return selected_columns
 
 
-level_data = read_df("September.xlsx", size=2000)
+level_data = read_df("September.xlsx", size=100000)
 level_data = level_data.drop([0])
-level_data = level_data.filter(items=["Timestamp", "115FE204_02M1RUN", "CO13_V0304S01", "CO13_V0306P03", "CO13_V0304E01", "115LIT12040A"])
+level_data = level_data.filter(items=["Timestamp", "115FE204_02M1RUN"," CO13_V0304S01", "CO13_V0306P03", "CO13_V0304E01", "115LIT12040A"])
 level_data['Timestamp'] = pd.to_datetime(level_data['Timestamp'])
 level_data = level_data.rename(columns={"Timestamp": "timestamp"})
 level_data = level_data.rename(columns={"115FE204_02M1RUN": "feeder", "115LIT12040A": "level", "CO13_V0304S01": "crusher_speed", "CO13_V0306P03": "crusher_pressure", "CO13_V0304E01":"crusher_power"})
 
 ampel_data = read_df("crusher_data_for_analysis.csv",size=len(level_data))
-#ampel_data = ampel_data.filter(items=["timestamp", "115YL12013A"])
+ampel_data = ampel_data.filter(items=["timestamp", "115YL12011A", "115YL12013A", ])
 ampel_data['timestamp'] = pd.to_datetime(ampel_data['timestamp'])
-ampel_data = ampel_data.rename(columns={"115YL12013A": "ampel"})
+ampel_data = ampel_data.rename(columns={"115YL12013A": "ampel_n", "115YL12011A": "ampel_s"})
+
+ampel_data["ampel_n"] = ampel_data["ampel_n"].str.slice(0,1)
+ampel_data["ampel_n"] = pd.to_numeric(ampel_data["ampel_n"], errors='coerce').dropna().astype(int)
+ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
+ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dropna().astype(int)
+print(ampel_data["ampel_s"][300])
+print(type(ampel_data["ampel_s"][300]))
+#ampel_data["ampel_n"] = ampel_data["ampel_n"].astype(int)
+#ampel_data["ampel_s"] = ampel_data["ampel_s"].str.slice(0,1)
+#ampel_data["ampel_s"] = ampel_data["ampel_s"].astype(int)
 
 #september_data_2 = pd.merge(ampel_data, level_data, left_on='timestamp', right_on='timestamp', how='inner')
 #print(september_data_2.dtypes)
 #store_df(september_data_2, "september_data_2.csv")
 store_df("ampel_data.csv", ampel_data)
+
 
 
 #crusher_data = read_df("crusher_data_for_analysis.csv")
