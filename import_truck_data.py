@@ -13,6 +13,6 @@ def import_truck_data():
     else:
         print("Columns of the files are not the same")
     
-    combined_df['Truck Discharge Date'] = pd.to_datetime(combined_df['Truck Discharge Date'])
+    combined_df['Truck Discharge Date'] = pd.to_datetime(combined_df['Truck Discharge Date'], errors='coerce')
 
     return combined_df

@@ -24,6 +24,7 @@ def make_disp_smaller(df: pd.DataFrame):
 
 
 list_of_files = ["September.xlsx", "October part 1.xlsx", "October part 2.xlsx", "October part 3.xlsx", "November part 1.xlsx", "November part 2.xlsx", "November part 3.xlsx", "December part 1.xlsx", "December part 2.xlsx", "December part 3.xlsx"]
+# list_of_files = ["September.xlsx", "October part 1.xlsx", "October part 2.xlsx", "October part 3.xlsx", "November part 1.xlsx"]
 for i in range(len(list_of_files)):
     level_data = read_df(list_of_files[i], size = 1000000)
     level_data = level_data.drop([0])
