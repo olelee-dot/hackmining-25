@@ -12,12 +12,6 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
     List_of_Peak_To_Peak = analysis.find_lin_section(dataframe_pit_level)
     # initialize empty DataFrame
     Data_frame_for_correlation = pd.DataFrame(columns=[
-    "Timestamp", 
-    "Crusher_Speed", 
-    "AUC", 
-    "Crusher Power",
-    "Crusher Pressure",
-    "Seconds_From_Min_To_Final_Peak", 
     "weight",
     "Copper Grade",
     "Soluble Copper Grade",
@@ -42,21 +36,14 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
     # find the correlating truck of one object using the timestamp of the first peak and the last truck to unload before that timestamp
     no_truck_found = 0
     for i in range (len(List_of_Peak_To_Peak)):
-        preceding_trucks = dataframe_truck_loads[dataframe_truck_loads['Truck Discharge Date'] < List_of_Peak_To_Peak[i].timestamp_first_peak] 
+        preceding_trucks = dataframe_truck_loads[dataframe_truck_loads['Truck Discharge Date'] < (List_of_Peak_To_Peak[i].timestamp_first_peak + List_of_Peak_To_Peak[i].timestamp_min_fill)]
         if not preceding_trucks.empty:
             correlating_truck = preceding_trucks.iloc[-1] # last preceding truck
             print ("For peak-to-peak segment at", List_of_Peak_To_Peak[i].timestamp_first_peak, "the correlating truck discharged at", correlating_truck['Truck Discharge Date'])
             if correlating_truck['Truck Discharge Date'] > List_of_Peak_To_Peak[i].timestamp_first_peak - pd.Timedelta(minutes=2):
                 # create a new row as a dictionary
                 new_row = {
-                    "Timestamp_first_peak": List_of_Peak_To_Peak[i].timestamp_first_peak,
-                    "Timestamp_truck_discharge": correlating_truck['Truck Discharge Date'],
-                    "Crusher_Speed": List_of_Peak_To_Peak[i].crusher_speed,
-                    "AUC": List_of_Peak_To_Peak[i].AUC,
-                    "Crusher Power": List_of_Peak_To_Peak[i].Crusher_Power,
-                    "Crusher Pressure": List_of_Peak_To_Peak[i].Crusher_Pressure,
-                    "Seconds_From_Min_To_Final_Peak": List_of_Peak_To_Peak[i].seconds_to_final_peak - List_of_Peak_To_Peak[i].seconds_to_min_fill,
-                    "weight": correlating_truck['real tons'],
+                    "weight": correlating_truck['Real Tons'],
                     "Copper Grade": correlating_truck['Copper Grade'],
                     "Soluble Copper Grade": correlating_truck['Soluble Copper Grade'],
                     "Py": correlating_truck['Py'],
@@ -77,9 +64,12 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
                     "Abrasiveness Index": correlating_truck['Abrasiveness Index']
                 }
 
-                # Convert the new row into a DataFrame and concatenate
+                # Convert the row into a DataFrame and ensure all values are numeric
                 new_row_df = pd.DataFrame([new_row])
-                Data_frame_for_correlation = pd.concat([Data_frame_for_correlation, new_row_df], ignore_index=True)
+                if new_row_df.map(np.isreal).all(axis=None):  # Check if all values are numeric
+                    Data_frame_for_correlation = pd.concat([Data_frame_for_correlation, new_row_df], ignore_index=True)
+                else:
+                    print(f"Skipping non-numeric row for peak at {List_of_Peak_To_Peak[i].timestamp_first_peak}")
             else:
                 print(f"No correlating truck found for peak-to-peak segment at {List_of_Peak_To_Peak[i].timestamp_first_peak}")
                 no_truck_found = no_truck_found + 1
@@ -95,7 +85,7 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
 
     # filter for correlations above a certain threshold
     significant_correlations = []
-    correlation_threshold = 0.5
+    correlation_threshold = 0.6
     for col_a in correlation_results.columns:
         for col_b in correlation_results.columns:
             if col_a != col_b:
@@ -123,3 +113,15 @@ def correlations (dataframe_pit_level, dataframe_truck_loads):
         plt.ylabel(col_b)
         plt.grid(True)
         plt.show()
+
+#"Crusher_Speed": List_of_Peak_To_Peak[i].crusher_speed,
+#"AUC": List_of_Peak_To_Peak[i].AUC,
+#"Crusher Power": List_of_Peak_To_Peak[i].Crusher_Power,
+#"Crusher Pressure": List_of_Peak_To_Peak[i].Crusher_Pressure,
+#"Seconds_From_Min_To_Final_Peak": (List_of_Peak_To_Peak[i].seconds_to_final_peak - List_of_Peak_To_Peak[i].timestamp_min_fill).total_seconds(),
+
+#"Crusher_Speed", 
+#"AUC", 
+#"Crusher Power",
+#"Crusher Pressure",
+#"Seconds_From_Min_To_Final_Peak", 
