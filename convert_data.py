@@ -50,8 +50,11 @@ def create_combined_data(size=500000):
     ampel_data["ampel_s"] = pd.to_numeric(ampel_data["ampel_s"], errors='coerce').dropna().astype(int)
     return ampel_data
 
-def load_prepaired_df(filename:str):
-    return pd.read_csv(os.path.join(output_path, filename))
+def load_prepaired_df(filename, size=None):
+    if size is None:
+        ret = pd.read_csv(os.path.join(output_path, filename))
+    else: ret = pd.read_csv(os.path.join(output_path, filename), nrows=size)
+    return ret
 
 if __name__ == "__main__":
     disp = create_disp()
